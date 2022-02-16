@@ -1,0 +1,403 @@
+import React, { useContext, useEffect, useReducer, useState } from 'react';
+
+import {
+  Grid,
+  TableContainer,
+  Table,
+  Typography,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Link,
+  CircularProgress,
+  Button,
+  Card,
+  List,
+  ListItem,
+  Box,
+  Container,
+} from '@mui/material';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import axios from 'axios';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
+import { useSnackbar } from 'notistack';
+
+import Layout from '../../components/Layout';
+import StripePay from '../../components/StripePay';
+import classes from '../../utils/classes';
+import { getError } from '../../utils/error';
+import { Store } from '../../utils/Store';
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'FETCH_REQUEST':
+      return { ...state, loading: true, error: '' };
+    case 'FETCH_SUCCESS':
+      return { ...state, loading: false, order: action.payload, error: '' };
+    case 'FETCH_FAIL':
+      return { ...state, loading: false, error: action.payload };
+    case 'PAY_REQUEST':
+      return { ...state, loadingPay: true };
+    case 'PAY_SUCCESS':
+      return { ...state, loadingPay: false, successPay: true };
+    case 'PAY_FAIL':
+      return { ...state, loadingPay: false, errorPay: action.payload };
+    case 'PAY_RESET':
+      return { ...state, loadingPay: false, successPay: false, errorPay: '' };
+    case 'DELIVER_REQUEST':
+      return { ...state, loadingDeliver: true };
+    case 'DELIVER_SUCCESS':
+      return { ...state, loadingDeliver: false, successDeliver: true };
+    case 'DELIVER_FAIL':
+      return { ...state, loadingDeliver: false, errorDeliver: action.payload };
+    case 'DELIVER_RESET':
+      return {
+        ...state,
+        loadingDeliver: false,
+        successDeliver: false,
+        errorDeliver: '',
+      };
+    default:
+      state;
+  }
+}
+
+let items = [];
+
+function Order({ params }) {
+  const orderId = params.id;
+  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+
+  const router = useRouter();
+  const { state } = useContext(Store);
+  const { userInfo } = state;
+
+  const [
+    { loading, error, order, successPay, loadingDeliver, successDeliver },
+    dispatch,
+  ] = useReducer(reducer, {
+    loading: true,
+    order: {},
+    error: '',
+  });
+  const {
+    shippingAddress,
+    paymentMethod,
+    orderItems,
+    itemsPrice,
+    taxPrice,
+    shippingPrice,
+    totalPrice,
+    isPaid,
+    paidAt,
+    isDelivered,
+    deliveredAt,
+  } = order;
+
+  items = orderItems && orderItems;
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (!userInfo) {
+      return router.push('/login');
+    }
+    const fetchOrder = async () => {
+      try {
+        dispatch({ type: 'FETCH_REQUEST' });
+        const { data } = await axios.get(`/api/orders/${orderId}`, {
+          headers: { authorization: `Bearer ${userInfo.token}` },
+        });
+
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+      } catch (err) {
+        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+      }
+    };
+    if (
+      !order._id ||
+      successPay ||
+      successDeliver ||
+      (order._id && order._id !== orderId)
+    ) {
+      fetchOrder();
+      if (successPay) {
+        dispatch({ type: 'PAY_RESET' });
+      }
+      if (successDeliver) {
+        dispatch({ type: 'DELIVER_RESET' });
+      }
+    } else {
+      if (paymentMethod === 'PayPal') {
+        const loadPaypalScript = async () => {
+          const { data: clientId } = await axios.get('/api/keys/paypal', {
+            headers: { authorization: `Bearer ${userInfo.token}` },
+          });
+          paypalDispatch({
+            type: 'resetOptions',
+            value: {
+              'client-id': clientId,
+              currency: 'USD',
+            },
+          });
+          paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
+        };
+        loadPaypalScript();
+      }
+    }
+  }, [order, successPay, successDeliver]);
+
+  function createOrder(data, actions) {
+    return actions.order
+      .create({
+        purchase_units: [
+          {
+            amount: { value: totalPrice },
+          },
+        ],
+      })
+      .then((orderID) => {
+        return orderID;
+      });
+  }
+  function onApprove(data, actions) {
+    return actions.order.capture().then(async function (details) {
+      try {
+        dispatch({ type: 'PAY_REQUEST' });
+        const { data } = await axios.put(
+          `/api/orders/${order._id}/pay`,
+          details,
+          {
+            headers: { authorization: `Bearer ${userInfo.token}` },
+          }
+        );
+        dispatch({ type: 'PAY_SUCCESS', payload: data });
+        enqueueSnackbar('Order is paid', { variant: 'success' });
+      } catch (err) {
+        dispatch({ type: 'PAY_FAIL', payload: getError(err) });
+        enqueueSnackbar(getError(err), { variant: 'error' });
+      }
+    });
+  }
+
+  function onError(err) {
+    enqueueSnackbar(getError(err), { variant: 'error' });
+  }
+
+  async function deliverOrderHandler() {
+    try {
+      dispatch({ type: 'DELIVER_REQUEST' });
+      const { data } = await axios.put(
+        `/api/orders/${order._id}/deliver`,
+        {},
+        {
+          headers: { authorization: `Bearer ${userInfo.token}` },
+        }
+      );
+      dispatch({ type: 'DELIVER_SUCCESS', payload: data });
+      enqueueSnackbar('Order is delivered', { variant: 'success' });
+    } catch (err) {
+      dispatch({ type: 'DELIVER_FAIL', payload: getError(err) });
+      enqueueSnackbar(getError(err), { variant: 'error' });
+    }
+  }
+
+  return (
+    <Layout title={`Order ${orderId}`}>
+      <Container>
+        <Typography variant="h4">Order {orderId}</Typography>
+        {loading ? (
+          <CircularProgress />
+        ) : error ? (
+          <Typography sx={classes.error}>{error}</Typography>
+        ) : (
+          <Grid container spacing={1}>
+            <Grid item md={9} xs={12}>
+              <Card sx={classes.section}>
+                <List>
+                  <ListItem>
+                    <Typography variant="h5">Shipping Address</Typography>
+                  </ListItem>
+                  <ListItem>
+                    {shippingAddress.fullName}, {shippingAddress.address},{' '}
+                    {shippingAddress.city}, {shippingAddress.postalCode},{' '}
+                    {shippingAddress.country}
+                    &nbsp;
+                  </ListItem>
+                  <ListItem>
+                    Status:{' '}
+                    {isDelivered
+                      ? `delivered at ${deliveredAt}`
+                      : 'not delivered'}
+                  </ListItem>
+                </List>
+              </Card>
+              <Card sx={classes.section}>
+                <List>
+                  <ListItem>
+                    <Typography variant="h5">Payment Method</Typography>
+                  </ListItem>
+                  <ListItem>{paymentMethod}</ListItem>
+                  <ListItem>
+                    Status: {isPaid ? `paid at ${paidAt}` : 'not paid'}
+                  </ListItem>
+                </List>
+              </Card>
+              <Card sx={classes.section}>
+                <List>
+                  <ListItem>
+                    <Typography variant="h5">Order Items</Typography>
+                  </ListItem>
+                  <ListItem>
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Image</TableCell>
+                            <TableCell>Name</TableCell>
+                            <TableCell align="right">Quantity</TableCell>
+                            <TableCell align="right">Price</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {orderItems.map((item) => (
+                            <TableRow key={item._id}>
+                              <TableCell>
+                                <NextLink
+                                  href={`/product/${item.article}`}
+                                  passHref
+                                >
+                                  <Link>
+                                    <Image
+                                      src={item.image}
+                                      alt={item.name}
+                                      width={70}
+                                      height={100}
+                                    ></Image>
+                                  </Link>
+                                </NextLink>
+                              </TableCell>
+
+                              <TableCell>
+                                <NextLink
+                                  href={`/product/${item.article}`}
+                                  passHref
+                                >
+                                  <Link>
+                                    <Typography>{item.name}</Typography>
+                                  </Link>
+                                </NextLink>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography>{item.quantity}</Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <Typography>${item.price}</Typography>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </ListItem>
+                </List>
+              </Card>
+            </Grid>
+            <Grid item md={3} xs={12}>
+              <Card sx={classes.section}>
+                <List>
+                  <ListItem>
+                    <Typography variant="h5">Order Summary</Typography>
+                  </ListItem>
+                  <ListItem>
+                    <Grid container>
+                      <Grid item xs={6}>
+                        <Typography>Items:</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography align="right">${itemsPrice}</Typography>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+                  <ListItem>
+                    <Grid container>
+                      <Grid item xs={6}>
+                        <Typography>Tax:</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography align="right">${taxPrice}</Typography>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+                  <ListItem>
+                    <Grid container>
+                      <Grid item xs={6}>
+                        <Typography>Shipping:</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography align="right">${shippingPrice}</Typography>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+                  <ListItem>
+                    <Grid container>
+                      <Grid item xs={6}>
+                        <Typography>
+                          <strong>Total:</strong>
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography align="right">
+                          <strong>${totalPrice}</strong>
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
+                  {!isPaid && (
+                    <ListItem>
+                      {isPending ? (
+                        <CircularProgress />
+                      ) : paymentMethod === 'PayPal' ? (
+                        <Box sx={classes.fullWidth}>
+                          <PayPalButtons
+                            createOrder={createOrder}
+                            onApprove={onApprove}
+                            onError={onError}
+                          ></PayPalButtons>
+                        </Box>
+                      ) : paymentMethod === 'Stripe' ? (
+                        <StripePay orderId={order._id} items={items} />
+                      ) : null}
+                    </ListItem>
+                  )}
+                  {userInfo.isAdmin && order.isPaid && !order.isDelivered && (
+                    <ListItem>
+                      {loadingDeliver && <CircularProgress />}
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={deliverOrderHandler}
+                      >
+                        Deliver Order
+                      </Button>
+                    </ListItem>
+                  )}
+                </List>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+      </Container>
+    </Layout>
+  );
+}
+
+export async function getServerSideProps({ params }) {
+  return { props: { params } };
+}
+
+export default dynamic(() => Promise.resolve(Order), { ssr: false });
