@@ -5,7 +5,7 @@ import { useSnackbar } from 'notistack';
 
 const stripePromise = loadStripe(`${process.env.stripe_public_key}`);
 
-export default function StripePay({ items, orderId }) {
+export default function StripePay({ items, orderId, taxPrice, shippingPrice }) {
   const { enqueueSnackbar } = useSnackbar();
 
   const createCheckOutSession = async () => {
@@ -15,6 +15,8 @@ export default function StripePay({ items, orderId }) {
       items: items,
       email: 'test@gmail.com',
       orderId: orderId,
+      taxPrice: taxPrice,
+      shippingPrice: shippingPrice,
     });
 
     const result = await stripe.redirectToCheckout({

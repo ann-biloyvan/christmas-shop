@@ -39,7 +39,7 @@ function PlaceOrder() {
     cart: { cartItems, shippingAddress, paymentMethod },
   } = state;
 
-  const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100;
+  const round2 = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
   const itemsPrice = round2(
     cartItems.reduce((a, c) => a + c.price * c.quantity, 0)
   );
@@ -94,8 +94,8 @@ function PlaceOrder() {
       }
       dispatch({ type: 'CART_CLEAR' });
       Cookies.remove('cartItems');
-      setLoading(false);
       router.push(`/order/${data._id}`);
+      setLoading(false);
     } catch (err) {
       setLoading(false);
       enqueueSnackbar(getError(err), { variant: 'error' });

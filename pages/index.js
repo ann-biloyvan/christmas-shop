@@ -17,7 +17,6 @@ import classes from '../utils/classes';
 import db from '../utils/db';
 import { Store } from '../utils/Store';
 
-
 export default function Home(props) {
   const { enqueueSnackbar } = useSnackbar();
   const { state, dispatch } = useContext(Store);
@@ -90,7 +89,9 @@ export default function Home(props) {
 
 export async function getServerSideProps() {
   await db.connect();
-  const featuredProductsDocs = await Product.find({ isFeatured: true })
+  const featuredProductsDocs = await Product.find({
+    countInStock: { $gte: 1 },
+  })
     .lean()
     .limit(6);
   await db.disconnect();

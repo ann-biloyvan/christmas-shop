@@ -51,6 +51,14 @@ function OrderHistory() {
     error: '',
   });
 
+  function transformDate(ICOdate) {
+    const GMTtime = new Date(ICOdate);
+    const time = GMTtime.toString().substring(16, 24);
+    return `${GMTtime.getFullYear()}.${
+      GMTtime.getMonth() < 10 ? '0' + GMTtime.getMonth() : GMTtime.getMonth()
+    }.${GMTtime.getDate()} ${time}`;
+  }
+
   useEffect(() => {
     if (!userInfo) {
       router.push('/login');
@@ -122,12 +130,14 @@ function OrderHistory() {
                               <TableCell>${order.totalPrice}</TableCell>
                               <TableCell>
                                 {order.isPaid
-                                  ? `paid at ${order.paidAt}`
+                                  ? `paid at ${transformDate(order.paidAt)}`
                                   : 'not paid'}
                               </TableCell>
                               <TableCell>
                                 {order.isDelivered
-                                  ? `delivered at ${order.deliveredAt}`
+                                  ? `delivered at ${transformDate(
+                                      order.deliveredAt
+                                    )}`
                                   : 'not delivered'}
                               </TableCell>
                               <TableCell>

@@ -101,6 +101,16 @@ function Order({ params }) {
   items = orderItems && orderItems;
   const { enqueueSnackbar } = useSnackbar();
 
+  function transformDate(ICOdate) {
+    const GMTtime = new Date(ICOdate);
+    const time = GMTtime.toString().substring(16, 24);
+    return `${GMTtime.getFullYear()}.${
+      GMTtime.getMonth() < 10 ? '0' + GMTtime.getMonth() : GMTtime.getMonth()
+    }.${
+      GMTtime.getDate() < 10 ? '0' + GMTtime.getDate() : GMTtime.getDate()
+    } ${time}`;
+  }
+
   useEffect(() => {
     if (!userInfo) {
       return router.push('/login');
@@ -230,7 +240,7 @@ function Order({ params }) {
                   <ListItem>
                     Status:{' '}
                     {isDelivered
-                      ? `delivered at ${deliveredAt}`
+                      ? `delivered at ${trasformDate(deliveredAt)}`
                       : 'not delivered'}
                   </ListItem>
                 </List>
@@ -242,7 +252,8 @@ function Order({ params }) {
                   </ListItem>
                   <ListItem>{paymentMethod}</ListItem>
                   <ListItem>
-                    Status: {isPaid ? `paid at ${paidAt}` : 'not paid'}
+                    Status:{' '}
+                    {isPaid ? `paid at ${transformDate(paidAt)}` : 'not paid'}
                   </ListItem>
                 </List>
               </Card>
@@ -369,7 +380,12 @@ function Order({ params }) {
                           ></PayPalButtons>
                         </Box>
                       ) : paymentMethod === 'Stripe' ? (
-                        <StripePay orderId={order._id} items={items} />
+                        <StripePay
+                          orderId={order._id}
+                          items={items}
+                          taxPrice={taxPrice}
+                          shippingPrice={shippingPrice}
+                        />
                       ) : null}
                     </ListItem>
                   )}

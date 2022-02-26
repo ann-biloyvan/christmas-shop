@@ -69,6 +69,15 @@ function AdminOrders() {
     };
     fetchData();
   }, []);
+
+  function transformDate(ICOdate) {
+    const GMTtime = new Date(ICOdate);
+    const time = GMTtime.toString().substring(16, 24);
+    return `${GMTtime.getFullYear()}.${
+      GMTtime.getMonth() < 10 ? '0' + GMTtime.getMonth() : GMTtime.getMonth()
+    }.${GMTtime.getDate()} ${time}`;
+  }
+
   return (
     <Layout title="Orders">
       <Container>
@@ -134,16 +143,20 @@ function AdminOrders() {
                               <TableCell>
                                 {order.user ? order.user.name : 'DELETED USER'}
                               </TableCell>
-                              <TableCell>{order.createdAt}</TableCell>
+                              <TableCell>
+                                {transformDate(order.createdAt)}
+                              </TableCell>
                               <TableCell>${order.totalPrice}</TableCell>
                               <TableCell>
                                 {order.isPaid
-                                  ? `paid at ${order.paidAt}`
+                                  ? `paid at ${transformDate(order.paidAt)}`
                                   : 'not paid'}
                               </TableCell>
                               <TableCell>
                                 {order.isDelivered
-                                  ? `delivered at ${order.deliveredAt}`
+                                  ? `delivered at ${transformDate(
+                                      order.deliveredAt
+                                    )}`
                                   : 'not delivered'}
                               </TableCell>
                               <TableCell>

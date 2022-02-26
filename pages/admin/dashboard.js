@@ -110,7 +110,7 @@ function AdminDashboard() {
                         <Card raised>
                           <CardContent>
                             <Typography variant="h5">
-                              ${summary.ordersPrice}
+                              ${summary.ordersPrice.toFixed(2)}
                             </Typography>
                             <Typography>Sales</Typography>
                           </CardContent>
