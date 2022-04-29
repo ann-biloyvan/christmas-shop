@@ -1,8 +1,64 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Short instructions
 
-## Getting Started
+Demo: https://christmas-shop-nextjs.vercel.app/
 
-First, run the development server:
+to login as admin and see more features:
+
+```
+login: admin@example.com
+password: 123456
+```
+
+[to pay with Stripe](https://stripe.com/docs/testing):
+
+- Use this test card 4242 4242 4242 4242 ;
+
+- Use a valid future date, such as 12/34;
+- Use any three-digit CVC (four digits for American Express cards);
+- Use any value you like for other form fields.
+
+---
+
+# About this project
+
+This is a single-page application of an e-commerce webshop.
+
+### Stack:
+
+1. Next.js 12;
+2. Materil UI v.5+;
+3. Mongo DB + Mongoose;
+
+All data on products, registered users, orders, sales, etc. is created with Mongoose schemas and stored in Mongo DB. It could be accessed, changed, and added from UI. Also, information in the database updates automatically, as, for example, an order is created and the total amount of products changes or information from a webhook tells that an order was paid.
+
+## Admin dashboard
+
+**to access those features register as:**
+
+```
+login: admin@example.com
+password: 123456
+```
+
+A user with administrator permission has access to some specific features:
+
+- Remove / update / create new products from UI, including uploading images using Cloudinary;
+
+- Look through automatically created sales charts;
+
+- Look through the list of all orders and match them as delivered;
+
+- Look through the list of all users and give them administrator permission.
+
+## Users
+
+Everyone can look through and add to cart products, but only registered users could create orders. Some pages couldn't be accessed without registration. Also, every registered user has access to information on their orders and can change their name, email, and password to their account from UI.
+
+Users can pay for their orders using cash, **_PayPal_** and **_Stripe_** systems. Information on time and payment method is stored and orders could be paid later.
+
+## To run the code locally
+
+Run the development server:
 
 ```bash
 npm run dev
@@ -11,24 +67,3 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

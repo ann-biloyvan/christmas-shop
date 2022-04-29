@@ -240,7 +240,7 @@ function Order({ params }) {
                   <ListItem>
                     Status:{' '}
                     {isDelivered
-                      ? `delivered at ${trasformDate(deliveredAt)}`
+                      ? `delivered at ${transformDate(deliveredAt)}`
                       : 'not delivered'}
                   </ListItem>
                 </List>
