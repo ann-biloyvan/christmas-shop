@@ -1,11 +1,9 @@
-import { useContext, useRef } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 
 import { Container, Grid, Link, Typography } from '@mui/material';
 import { Box } from '@mui/material';
 import axios from 'axios';
 import NextLink from 'next/link';
-import { useRouter } from 'next/router';
 import { useSnackbar } from 'notistack';
 
 import Banner from '../components/Banner';
@@ -21,6 +19,8 @@ export default function Home(props) {
   const { enqueueSnackbar } = useSnackbar();
   const { state, dispatch } = useContext(Store);
   const { featuredProducts } = props;
+  const [containerHeight, setContainerHeight] = useState(0);
+  const containerRef = useRef();
 
   const addToCartHandler = async (product) => {
     const existItem = state.cart.cartItems.find((x) => x._id === product._id);
@@ -33,10 +33,6 @@ export default function Home(props) {
     }
     dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
   };
-
-  const [containerHeight, setContainerHeight] = useState(0);
-
-  const containerRef = useRef();
 
   const setDimension = () => {
     setContainerHeight(containerRef.current.clientHeight);

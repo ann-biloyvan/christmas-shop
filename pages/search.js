@@ -24,7 +24,6 @@ import classes from '../utils/classes';
 import db from '../utils/db';
 import { Store } from '../utils/Store';
 
-
 const PAGE_SIZE = 6;
 
 const prices = [
@@ -45,7 +44,6 @@ const prices = [
 export default function Search(props) {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
-
   const {
     query = 'all',
     category = 'all',
@@ -54,24 +52,15 @@ export default function Search(props) {
   } = router.query;
   const { products, countProducts, categories, pages, page } = props;
 
-  const filterSearch = ({
-    page,
-    category,
-    sort,
-    min,
-    max,
-    searchQuery,
-    price,
-  }) => {
+  const { state, dispatch } = useContext(Store);
+
+  const filterSearch = ({ page, category, sort, price }) => {
     const path = router.pathname;
     const { query } = router;
     if (page) query.page = page;
-    if (searchQuery) query.searchQuery = searchQuery;
     if (sort) query.sort = sort;
     if (category) query.category = category;
     if (price) query.price = price;
-    if (min) query.min ? query.min : query.min === 0 ? 0 : min;
-    if (max) query.max ? query.max : query.max === 0 ? 0 : max;
 
     router.push({
       pathname: path,
@@ -93,7 +82,6 @@ export default function Search(props) {
     filterSearch({ price: e.target.value, page: 1 });
   };
 
-  const { state, dispatch } = useContext(Store);
   const addToCartHandler = async (product) => {
     const existItem = state.cart.cartItems.find((x) => x._id === product._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;

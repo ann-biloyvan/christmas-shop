@@ -21,6 +21,7 @@ function Snow({ containerHeight }) {
     let arr = Array.from(
       'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s. When an unknown printer took a galley of type and scrambled it to make a type specimen book'
     );
+
     return arr.map((_, i) => {
       animationDelay = `${(Math.random() * 20).toFixed(2)}s`;
       fontSize = `${Math.floor(Math.random() * 10) + 5}px`;

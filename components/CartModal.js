@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Box, Button, Modal, Typography } from '@mui/material';
-import NextLink from 'next/link';
+import Link from 'next/link';
 
 import classes from '../utils/classes';
 
@@ -20,9 +20,9 @@ export default function CartModal({ open, handleClose }) {
         </Typography>
         <Box component="div">
           <Button onClick={() => handleClose()}>Continue</Button>
-          <NextLink href="/cart">
+          <Link href="/cart" passHref>
             <Button>Go to cart </Button>
-          </NextLink>
+          </Link>
         </Box>
       </Box>
     </Modal>

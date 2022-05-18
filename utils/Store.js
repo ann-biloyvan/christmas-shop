@@ -1,23 +1,11 @@
-import Cookies from 'js-cookie';
 import { createContext, useReducer } from 'react';
 
-export const Store = createContext();
-const initialState = {
-  lightsMode: Cookies.get('lightsMode')
-    ? Cookies.get('lightsMode') == 'ON'
-      ? true
-      : false
-    : true,
+import Cookies from 'js-cookie';
 
-  firstStyle: Cookies.get('firstStyle')
-    ? Cookies.get('firstStyle')
-    : Cookies.set('firstStyle', 'firstcolor'),
-  secondStyle: Cookies.get('secondStyle')
-    ? Cookies.get('secondStyle')
-    : Cookies.set('secondStyle', 'secondcolor'),
-  thirdStyle: Cookies.get('thirdStyle')
-    ? Cookies.get('thirdStyle')
-    : Cookies.set('thirdStyle', 'thirdcolor'),
+export const Store = createContext();
+
+const initialState = {
+  lightsMode: true,
 
   cart: {
     cartItems: Cookies.get('cartItems')
@@ -38,9 +26,9 @@ const initialState = {
 function reducer(state, action) {
   switch (action.type) {
     case 'BASIC_MODE': {
-      Cookies.set('firstStyle', 'firstcolor');
-      Cookies.set('secondStyle', 'secondcolor');
-      Cookies.set('thirdStyle', 'thirdcolor');
+      localStorage.setItem('firstStyle', 'firstcolor');
+      localStorage.setItem('secondStyle', 'secondcolor');
+      localStorage.setItem('thirdStyle', 'thirdcolor');
 
       return {
         ...state,
@@ -49,9 +37,9 @@ function reducer(state, action) {
     }
 
     case 'COLOR_MODE': {
-      Cookies.set('firstStyle', 'first');
-      Cookies.set('secondStyle', 'second');
-      Cookies.set('thirdStyle', 'third');
+      localStorage.setItem('firstStyle', 'first');
+      localStorage.setItem('secondStyle', 'second');
+      localStorage.setItem('thirdStyle', 'third');
       return {
         ...state,
         lightsMode: false,

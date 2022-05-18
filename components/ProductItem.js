@@ -10,8 +10,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import Image from 'next/image';
-import NextLink from 'next/link';
+import Link from 'next/link';
 
 import classes from '../utils/classes';
 import CartModal from './CartModal';
@@ -26,17 +25,19 @@ export default function ProductItem({ product, addToCartHandler }) {
 
   return (
     <Card sx={classes.productCard}>
-      <NextLink href={`/product/${product.article}`} passHref>
+      <Link href={`/product/${product.article}`} passHref>
         <CardActionArea>
           <CardMedia
             component="img"
             src={product.image}
-            onMouseOver={(e) => {
+            onMouseEnter={(e) => {
               if (product.subImage) {
-                return (e.currentTarget.src = `${product.subImage}`);
+                return (e.target.src = `${product.subImage}`);
               }
             }}
-            onMouseOut={(e) => (e.currentTarget.src = `${product.image}`)}
+            onMouseOut={(e) => {
+              e.target.src = `${product.image}`;
+            }}
             alt={product.name}
             title={product.name}
           />
@@ -45,7 +46,7 @@ export default function ProductItem({ product, addToCartHandler }) {
             <Typography>{product.name}</Typography>
           </CardContent>
         </CardActionArea>
-      </NextLink>
+      </Link>
       <CardActions sx={classes.cardActions}>
         <Typography>${product.price}</Typography>
         {product.countInStock === 0 ? (

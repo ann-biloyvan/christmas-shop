@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 
 import classes from '../utils/classes';
 
-
 const calcTimeLeft = () => {
   let year = new Date().getFullYear();
   const difference = +new Date(`12/25/${year}`) - +new Date();
@@ -21,6 +20,7 @@ const calcTimeLeft = () => {
       seconds: Math.floor((difference / 1000) % 60),
     };
   }
+
   return timeLeft;
 };
 
@@ -32,19 +32,6 @@ function CountdownTimer() {
       setTimeLeft(calcTimeLeft());
     }, 1000);
     return () => clearTimeout(timer);
-  });
-  const timerComponents = [];
-
-  Object.keys(timeLeft).forEach((interval) => {
-    if (!timeLeft[interval]) {
-      return;
-    }
-
-    timerComponents.push(
-      <Box component="span">
-        {timeLeft[interval]} {interval}{' '}
-      </Box>
-    );
   });
 
   return (

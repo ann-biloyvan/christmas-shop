@@ -1,6 +1,5 @@
 import React from 'react';
 
-import Cookies from 'js-cookie';
 import dynamic from 'next/dynamic';
 
 import styles from '../utils/LightRope.module.css';
@@ -35,11 +34,11 @@ function Bulb({ firststyle, secondstyle, thirdstyle }) {
 }
 
 function LightRope() {
-  let firststyle = Cookies.get('firstStyle');
+  const firststyle = localStorage.getItem('firstStyle');
 
-  let secondstyle = Cookies.get('secondStyle');
+  const secondstyle = localStorage.getItem('secondStyle');
 
-  let thirdstyle = Cookies.get('thirdStyle');
+  const thirdstyle = localStorage.getItem('thirdStyle');
 
   return (
     <div className={styles.box}>

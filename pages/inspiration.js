@@ -1,8 +1,8 @@
-import { ImageList, ImageListItem, Link, useMediaQuery } from '@mui/material';
+import { ImageList, ImageListItem, useMediaQuery } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { Box } from '@mui/system';
-import Image from 'next/image';
+import Link from 'next/link';
 
 import Layout from '../components/Layout';
 import styles from '../utils/Inspiration.module.css';
@@ -144,7 +144,7 @@ export default function Inspiration() {
                 loading="lazy"
               />
               {item.href && (
-                <Link href={item.href}>
+                <Link href={item.href} passHref>
                   <HtmlTooltip title={`${item.title} $${item.price}`}>
                     <Box
                       className={styles.blob}
@@ -158,7 +158,7 @@ export default function Inspiration() {
               )}
 
               {item.href2 && (
-                <Link href={item.href2}>
+                <Link href={item.href2} passHref>
                   <HtmlTooltip title={`${item.title2} $${item.price2}`}>
                     <Box
                       className={styles.blob}

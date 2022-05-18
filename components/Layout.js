@@ -141,6 +141,11 @@ export default function Layout({ title, description, children }) {
 
   useEffect(() => {
     fetchCategories();
+    if (localStorage.getItem('lightsMode') === null) {
+      dispatch({
+        type: 'BASIC_MODE',
+      });
+    }
   }, []);
 
   const lightsChangeHandler = () => {
@@ -148,7 +153,7 @@ export default function Layout({ title, description, children }) {
       type: lightsMode ? 'COLOR_MODE' : 'BASIC_MODE',
     });
     const newMode = !lightsMode;
-    Cookies.set('lightsMode', newMode ? 'ON' : 'OFF');
+    localStorage.setItem('lightsMode', newMode ? true : false);
   };
   const [anchorEl, setAnchorEl] = useState(null);
   const loginClickHandler = (e) => {
